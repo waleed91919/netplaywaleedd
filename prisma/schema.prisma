@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Movie model
+model Movie {
+  id                Int      @id
+  title             String
+  overview          String?
+  posterPath        String?
+  backdropPath      String?
+  releaseDate       DateTime?
+  voteAverage       Float    @default(0)
+  originalLanguage  String?
+  runtime           Int?
+  popularity        Float    @default(0)
+  
+  // Relationships
+  genres            MovieGenre[]
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Trending relationship
+  trending          TrendingMovie?
+}
+
+// TV Series model
+model Series {
+  id                Int      @id
+  name              String
+  overview          String?
+  posterPath        String?
+  backdropPath      String?
+  firstAirDate      DateTime?
+  voteAverage       Float    @default(0)
+  originalLanguage  String?
+  numberOfSeasons   Int?
+  numberOfEpisodes  Int?
+  popularity        Float    @default(0)
+  
+  // Relationships
+  genres            SeriesGenre[]
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Trending relationship
+  trending          TrendingSeries?
+}
+
+// Genre model for movies
+model Genre {
+  id                Int      @id
+  name              String
+  
+  // Relationships
+  movies            MovieGenre[]
+  series            SeriesGenre[]
+}
+
+// Junction table for Movie and Genre (many-to-many)
+model MovieGenre {
+  movie             Movie    @relation(fields: [movieId], references: [id])
+  movieId           Int
+  genre             Genre    @relation(fields: [genreId], references: [id])
+  genreId           Int
+
+  @@id([movieId, genreId])
+}
+
+// Junction table for Series and Genre (many-to-many)
+model SeriesGenre {
+  series            Series   @relation(fields: [seriesId], references: [id])
+  seriesId          Int
+  genre             Genre    @relation(fields: [genreId], references: [id])
+  genreId           Int
+
+  @@id([seriesId, genreId])
+}
+
+// Trending Movies
+model TrendingMovie {
+  movie             Movie    @relation(fields: [movieId], references: [id])
+  movieId           Int      @id
+  rank              Int
+  dateAdded         DateTime @default(now())
+}
+
+// Trending Series
+model TrendingSeries {
+  series            Series   @relation(fields: [seriesId], references: [id])
+  seriesId          Int      @id
+  rank              Int
+  dateAdded         DateTime @default(now())
+}
